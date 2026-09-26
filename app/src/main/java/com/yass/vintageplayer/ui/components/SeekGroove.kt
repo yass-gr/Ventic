@@ -41,7 +41,6 @@ fun SeekGroove(progress: () -> Float, onSeek: (Float) -> Unit, modifier: Modifie
                     val down = awaitFirstDown()
                     dragging = true
                     dragValue = (down.position.x / size.width).coerceIn(0f, 1f)
-                    latestOnSeek(dragValue)
                     var done = false
                     while (!done) {
                         val event = awaitPointerEvent()
@@ -50,10 +49,10 @@ fun SeekGroove(progress: () -> Float, onSeek: (Float) -> Unit, modifier: Modifie
                             done = true
                         } else {
                             dragValue = (change.position.x / size.width).coerceIn(0f, 1f)
-                            latestOnSeek(dragValue)
                             change.consume()
                         }
                     }
+                    latestOnSeek(dragValue)
                     dragging = false
                 }
             },

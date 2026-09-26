@@ -158,7 +158,7 @@ class LevelMeterProcessor : BaseAudioProcessor() {
         }
         for (b in 0 until AudioLevels.BAND_COUNT) {
             val target = if (bandBins[b] > 0) {
-                toUnit(sqrt(bandEnergy[b] / bandBins[b]))
+                toUnit(sqrt(bandEnergy[b] / bandBins[b]) * FFT_NORM)
             } else {
                 0f
             }
@@ -258,6 +258,7 @@ class LevelMeterProcessor : BaseAudioProcessor() {
         private const val ATTACK = 0.6f
         private const val RELEASE = 0.15f
         private const val EPS = 1e-9f
+        private const val FFT_NORM = 4f / FRAME_SIZE
 
         private fun toUnit(magnitude: Float): Float {
             return ((20f * log10(magnitude + EPS) + 60f) / 60f).coerceIn(0f, 1f)

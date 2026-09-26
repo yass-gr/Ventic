@@ -61,6 +61,9 @@ class MediaControllerConnection(
     private var mediaById: Map<String, Track> = emptyMap()
     private var persistJob: Job? = null
 
+    /** Resolves a track by id when the queue was built by an earlier UI process (service outlived it). */
+    var trackResolver: (Long) -> Track? = { null }
+
     private val listener = object : Player.Listener {
         override fun onEvents(player: Player, events: Player.Events) {
             val ctrl = synchronized(lock) { controller } ?: return
@@ -211,6 +214,7 @@ class MediaControllerConnection(
         if (tracks.isEmpty()) {
             return
         }
+        runWhenConnected { ctrl -> refresh(ctrl) }
         val saved = settings.settings.value
         val lastId = saved.lastTrackId ?: return
         val index = tracks.indexOfFirst { it.id == lastId }
@@ -243,7 +247,7 @@ class MediaControllerConnection(
 
     private fun refresh(ctrl: Player) {
         val wasPlaying = _state.value.isPlaying
-        val current = ctrl.currentMediaItem?.mediaId?.let { mediaById[it] }
+        val current = ctrl.currentMediaItem?.mediaId?.let { mediaById[it] ?: it.toLongOrNull()?.let(trackResolver) }
         val next = PlaybackState(
             current = current,
             isPlaying = ctrl.isPlaying,
@@ -268,7 +272,7 @@ class MediaControllerConnection(
 
     private fun startPersistTicker() {
         persistJob?.cancel()
-        persistJob = scope.launch {
+        persistJob = scope.launch(Dispatchers.Main.immediate) {
             while (true) {
                 delay(PERSIST_INTERVAL_MS)
                 val ctrl = synchronized(lock) { controller } ?: break

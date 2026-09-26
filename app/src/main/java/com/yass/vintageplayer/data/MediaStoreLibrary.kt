@@ -17,6 +17,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -43,6 +45,7 @@ class MediaStoreLibrary(
     private var lastCached: List<Track>? = null
 
     private val started = AtomicBoolean(false)
+    private val scanLock = Mutex()
     private var debounceJob: Job? = null
 
     private val observer = object : ContentObserver(Handler(Looper.getMainLooper())) {
@@ -76,13 +79,13 @@ class MediaStoreLibrary(
                 allTracks = cached
                 publish()
             }
-            rescanInternal()
+            scanLock.withLock { rescanInternal() }
         }
     }
 
     override suspend fun rescan() {
         withContext(Dispatchers.IO) {
-            rescanInternal()
+            scanLock.withLock { rescanInternal() }
         }
     }
 

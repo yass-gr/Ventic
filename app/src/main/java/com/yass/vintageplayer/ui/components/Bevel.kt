@@ -116,8 +116,8 @@ fun BevelButton(
     val pressed by interaction.collectIsPressedAsState()
     Box(
         modifier = modifier
-            .clip(shape)
             .bevel(on || pressed, shape)
+            .clip(shape)
             .clickable(
                 interactionSource = interaction,
                 indication = null,

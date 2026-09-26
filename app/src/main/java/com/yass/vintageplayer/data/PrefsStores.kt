@@ -14,7 +14,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -66,36 +65,29 @@ class DataStoreSettings(
     )
     override val settings: StateFlow<AppSettings> = _settings.asStateFlow()
 
-    init {
-        scope.launch {
-            appCtx.vintageDataStore.data.map { it.toAppSettings() }
-                .distinctUntilChanged()
-                .collect { if (it != _settings.value) _settings.value = it }
-        }
-    }
-
     override fun update(transform: (AppSettings) -> AppSettings) {
         val next = transform(_settings.value)
         if (next == _settings.value) return
         _settings.value = next
         scope.launch(Dispatchers.IO) {
             appCtx.vintageDataStore.edit { prefs ->
-                prefs[PrefKeys.Dark] = next.dark
-                prefs[PrefKeys.Accent] = next.accent
-                prefs[PrefKeys.Volume] = next.volume
-                prefs[PrefKeys.Shuffle] = next.shuffle
-                prefs[PrefKeys.RepeatOne] = next.repeatOne
-                if (next.folder == null) {
+                val latest = _settings.value
+                prefs[PrefKeys.Dark] = latest.dark
+                prefs[PrefKeys.Accent] = latest.accent
+                prefs[PrefKeys.Volume] = latest.volume
+                prefs[PrefKeys.Shuffle] = latest.shuffle
+                prefs[PrefKeys.RepeatOne] = latest.repeatOne
+                if (latest.folder == null) {
                     prefs.remove(PrefKeys.Folder)
                 } else {
-                    prefs[PrefKeys.Folder] = next.folder
+                    prefs[PrefKeys.Folder] = latest.folder
                 }
-                if (next.lastTrackId == null) {
+                if (latest.lastTrackId == null) {
                     prefs.remove(PrefKeys.LastTrackId)
                 } else {
-                    prefs[PrefKeys.LastTrackId] = next.lastTrackId
+                    prefs[PrefKeys.LastTrackId] = latest.lastTrackId
                 }
-                prefs[PrefKeys.LastPositionMs] = next.lastPositionMs
+                prefs[PrefKeys.LastPositionMs] = latest.lastPositionMs
             }
         }
     }
@@ -112,14 +104,6 @@ class DataStoreFavorites(
     )
     override val favorites: StateFlow<Set<Long>> = _favorites.asStateFlow()
 
-    init {
-        scope.launch {
-            appCtx.vintageDataStore.data.map { it.toFavorites() }
-                .distinctUntilChanged()
-                .collect { if (it != _favorites.value) _favorites.value = it }
-        }
-    }
-
     override fun toggle(trackId: Long) {
         val current = _favorites.value
         val next = if (current.contains(trackId)) current - trackId else current + trackId
@@ -127,7 +111,8 @@ class DataStoreFavorites(
         _favorites.value = next
         scope.launch(Dispatchers.IO) {
             appCtx.vintageDataStore.edit { prefs ->
-                prefs[PrefKeys.Favorites] = next.mapTo(LinkedHashSet(next.size)) { it.toString() }
+                val latest = _favorites.value
+                prefs[PrefKeys.Favorites] = latest.mapTo(LinkedHashSet(latest.size)) { it.toString() }
             }
         }
     }
