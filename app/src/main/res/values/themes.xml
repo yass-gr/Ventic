@@ -1,0 +1,8 @@
+<resources>
+    <!-- Window background matches the dark chassis so there is no white flash on cold start. -->
+    <style name="Theme.VintagePlayer" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/chassis_dark</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+    </style>
+</resources>

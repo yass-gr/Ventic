@@ -1,0 +1,636 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Vintage Player</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&amp;family=Orbitron:wght@600;800&amp;family=Share+Tech+Mono&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; position: relative; overflow: hidden; display: flex; flex-direction: column; font-family: 'Barlow Semi Condensed', sans-serif; background: {{t.chassis}}; color: {{t.text}}">
+
+<sc-if value="{{isPlayer}}" hint-placeholder-val="{{ true }}">
+<div style="flex-grow: 1; min-height: 0; box-sizing: border-box; padding: 20px 20px 16px; display: flex; flex-direction: column; justify-content: space-between; gap: 12px">
+
+<div style="display: flex; align-items: center; justify-content: space-between; height: 44px">
+<button type="button" aria-label="Back to library" onClick="{{goLibrary}}" style="{{st.btn}} width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; padding: 0; cursor: pointer">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
+</button>
+<div style="display: flex; flex-direction: column; align-items: center; gap: 2px">
+<div style="{{st.label}} font-size: 14px; font-weight: 700; letter-spacing: 3px">NOW PLAYING</div>
+<div style="font-family: 'Share Tech Mono', monospace; font-size: 12px; letter-spacing: 1px; color: {{t.sub}}">TRACK {{trkNum}} OF {{trkTotal}}</div>
+</div>
+<div style="width: 44px; height: 44px"></div>
+</div>
+
+<div style="background: {{t.bezel}}; border-radius: 16px; padding: 8px; box-shadow: {{t.bezelShadow}}">
+<div style="position: relative; overflow: hidden; border-radius: 10px; padding: 14px 16px 12px; background: {{t.lcdBg}}; box-shadow: inset 0 2px 8px rgba(0,0,0,0.55); display: flex; flex-direction: column; gap: 8px; font-family: 'Share Tech Mono', monospace; color: {{lcdText}}">
+<div style="display: flex; align-items: center; gap: 12px; font-size: 12px; letter-spacing: 1.5px">
+<span>TRK {{trkNum}}</span>
+<span style="color: {{ind.shuf}}">SHUF</span>
+<span style="color: {{ind.rep}}">REP</span>
+<span style="color: {{ind.fav}}">FAV</span>
+<span style="margin-left: auto">{{playWord}}</span>
+</div>
+<div style="display: flex; align-items: center; gap: 12px">
+<div role="img" aria-label="{{coverLabel}}" style="{{coverStyle}} width: 60px; height: 60px; flex-shrink: 0; border-radius: 6px"></div>
+<div style="display: flex; flex-direction: column; gap: 4px; min-width: 0">
+<div style="font-family: 'Orbitron', sans-serif; font-weight: 800; font-size: 22px; line-height: 1.2; letter-spacing: 1px; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: {{lcdGlow}}">{{cur.title}}</div>
+<div style="font-size: 15px; letter-spacing: 1px; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{cur.artist}}</div>
+</div>
+</div>
+<div style="height: 48px; display: flex; align-items: flex-end; gap: 3px; margin-top: 2px">
+<sc-for list="{{bars}}" as="b" hint-placeholder-count="28">
+<div style="{{b.ghost}}"><div style="{{b.lit}}"></div></div>
+</sc-for>
+</div>
+<div style="display: flex; align-items: baseline; gap: 8px">
+<span style="font-family: 'Orbitron', sans-serif; font-weight: 600; font-size: 24px; text-shadow: {{lcdGlow}}">{{posStr}}</span>
+<span style="font-size: 15px">/ {{durStr}}</span>
+<span style="margin-left: auto; font-size: 15px">-{{remStr}}</span>
+</div>
+<div style="position: absolute; left: 0; right: 0; top: 0; bottom: 0; pointer-events: none; background: repeating-linear-gradient(0deg, rgba(0,0,0,0.12) 0 1px, rgba(0,0,0,0) 1px 3px)"></div>
+<div style="position: absolute; left: 0; right: 0; top: 0; height: 45%; pointer-events: none; background: linear-gradient(180deg, rgba(255,255,255,0.09), rgba(255,255,255,0))"></div>
+</div>
+</div>
+
+<div style="position: relative; height: 24px; display: flex; align-items: center">
+<div style="position: relative; width: 100%; height: 10px; border-radius: 5px; background: {{t.groove}}; box-shadow: {{t.grooveShadow}}">
+<div style="position: absolute; left: 0; top: 0; bottom: 0; width: {{pct}}%; border-radius: 5px; background: {{accent}}; box-shadow: 0 0 8px {{accentGlow}}"></div>
+</div>
+<div style="position: absolute; top: 1px; left: {{thumbLeft}}px; width: 22px; height: 22px; border-radius: 50%; background: {{t.knob}}; border: 1px solid {{t.btnBorder}}; box-sizing: border-box; box-shadow: 0 2px 4px rgba(0,0,0,0.45)"></div>
+<input type="range" min="0" max="{{cur.dur}}" step="1" value="{{pos}}" onChange="{{onSeek}}" aria-label="Seek" style="position: absolute; left: 0; top: -10px; width: 100%; height: 44px; margin: 0; opacity: 0; cursor: pointer">
+</div>
+
+<div style="display: flex; align-items: center; justify-content: space-between">
+<button type="button" aria-label="Shuffle" aria-pressed="{{shuffle}}" onClick="{{toggleShuffle}}" style="{{st.shufBtn}} width: 52px; height: 58px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 0; cursor: pointer">
+<span style="{{st.shufLed}} width: 6px; height: 6px; border-radius: 50%"></span>
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg>
+</button>
+<button type="button" aria-label="Previous track" onClick="{{prev}}" style="{{st.btn}} width: 62px; height: 62px; border-radius: 14px; display: flex; align-items: center; justify-content: center; padding: 0; cursor: pointer">
+<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 20L9 12l10-8v16z"></path><line x1="5" y1="19" x2="5" y2="5"></line></svg>
+</button>
+<div style="width: 104px; height: 104px; border-radius: 50%; box-sizing: border-box; padding: 6px; background: {{t.groove}}; box-shadow: {{playRing}}">
+<button type="button" aria-label="{{playLabel}}" onClick="{{togglePlay}}" style="width: 92px; height: 92px; border-radius: 50%; box-sizing: border-box; padding: 0; display: flex; align-items: center; justify-content: center; cursor: pointer; background: {{t.knob}}; border: 1px solid {{t.btnBorder}}; box-shadow: {{t.knobShadow}}; color: {{t.playIcon}}">
+<sc-if value="{{playing}}" hint-placeholder-val="{{ true }}">
+<svg width="34" height="34" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"></rect><rect x="14" y="5" width="4" height="14" rx="1"></rect></svg>
+</sc-if>
+<sc-if value="{{paused}}" hint-placeholder-val="{{ false }}">
+<svg width="36" height="36" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"></path></svg>
+</sc-if>
+</button>
+</div>
+<button type="button" aria-label="Next track" onClick="{{next}}" style="{{st.btn}} width: 62px; height: 62px; border-radius: 14px; display: flex; align-items: center; justify-content: center; padding: 0; cursor: pointer">
+<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4l10 8-10 8V4z"></path><line x1="19" y1="5" x2="19" y2="19"></line></svg>
+</button>
+<button type="button" aria-label="Repeat track" aria-pressed="{{repeat}}" onClick="{{toggleRepeat}}" style="{{st.repBtn}} width: 52px; height: 58px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 0; cursor: pointer">
+<span style="{{st.repLed}} width: 6px; height: 6px; border-radius: 50%"></span>
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="17 1 21 5 17 9"></polyline><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><polyline points="7 23 3 19 7 15"></polyline><path d="M21 13v2a4 4 0 0 1-4 4H3"></path></svg>
+</button>
+</div>
+
+<div style="display: flex; gap: 12px; align-items: stretch">
+<div style="flex-grow: 1; {{st.module}} border-radius: 14px; padding: 10px 10px 8px; display: flex; flex-direction: column; align-items: center; gap: 8px">
+<div style="position: relative; width: 100%; height: 108px; border-radius: 8px; overflow: hidden; background: {{t.vuFace}}; box-shadow: inset 0 2px 7px rgba(0,0,0,0.55)">
+<svg viewBox="0 0 200 126" width="100%" height="100%" preserveAspectRatio="xMidYMax meet" aria-hidden="true" style="display: block">
+<path d="M 38.7 66.6 A 80 80 0 0 1 133.8 45.5" fill="none" stroke="{{t.vuInk}}" stroke-width="2"></path>
+<path d="M 133.8 45.5 A 80 80 0 0 1 161.3 66.6" fill="none" stroke="#c8372d" stroke-width="5"></path>
+<g stroke="{{t.vuInk}}" stroke-width="2" stroke-linecap="round">
+<line x1="44.8" y1="71.7" x2="35.7" y2="64"></line>
+<line x1="64" y1="55.6" x2="58" y2="45.3"></line>
+<line x1="81.4" y1="48.4" x2="78.3" y2="36.9"></line>
+<line x1="100" y1="46" x2="100" y2="34"></line>
+<line x1="118.6" y1="48.4" x2="121.7" y2="36.9"></line>
+<line x1="130.4" y1="52.8" x2="135.5" y2="41.9"></line>
+<line x1="141.3" y1="59" x2="148.2" y2="49.2"></line>
+<line x1="155.2" y1="71.7" x2="164.3" y2="64"></line>
+</g>
+<g fill="{{t.vuInk}}" font-family="Share Tech Mono, monospace" font-size="11" text-anchor="middle">
+<text x="27" y="58">20</text>
+<text x="52" y="37">10</text>
+<text x="75" y="28">5</text>
+<text x="100" y="24">0</text>
+<text x="140" y="33" fill="#c8372d">+3</text>
+<text x="100" y="92" font-size="13" letter-spacing="2">VU</text>
+</g>
+<line x1="100" y1="118" x2="100" y2="38" stroke="{{t.vuNeedle}}" stroke-width="2" stroke-linecap="round" transform="rotate({{needle}} 100 118)"></line>
+<circle cx="100" cy="118" r="9" fill="{{t.vuCap}}"></circle>
+</svg>
+<div style="position: absolute; left: 0; right: 0; top: 0; height: 50%; pointer-events: none; background: linear-gradient(180deg, rgba(255,255,255,0.28), rgba(255,255,255,0))"></div>
+</div>
+<div style="{{st.label}} font-size: 12px; font-weight: 700; letter-spacing: 2.5px">LEVEL</div>
+</div>
+<div style="width: 138px; flex-shrink: 0; {{st.module}} border-radius: 14px; padding: 10px 8px 8px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: space-between; gap: 6px">
+<div style="position: relative; width: 104px; height: 104px">
+<div style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; border-radius: 50%; background: {{volRing}}"></div>
+<div style="position: absolute; left: 6px; top: 6px; right: 6px; bottom: 6px; border-radius: 50%; background: {{t.moduleSolid}}"></div>
+<div style="position: absolute; left: 11px; top: 11px; right: 11px; bottom: 11px; border-radius: 50%; background: {{t.knob}}; border: 1px solid {{t.btnBorder}}; box-shadow: {{t.knobShadow}}"></div>
+<div style="position: absolute; left: 11px; top: 11px; right: 11px; bottom: 11px; transform: rotate({{knobDeg}}deg)">
+<div style="position: absolute; left: 50%; top: 9px; width: 9px; height: 9px; margin-left: -4.5px; border-radius: 50%; background: {{accent}}; box-shadow: 0 0 6px {{accentGlow}}, inset 0 1px 1px rgba(0,0,0,0.3)"></div>
+</div>
+<input type="range" min="0" max="100" step="1" value="{{volNum}}" onChange="{{onVol}}" aria-label="Volume" style="position: absolute; left: 0; top: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer">
+</div>
+<div style="display: flex; align-items: center; gap: 8px">
+<span style="{{st.label}} font-size: 12px; font-weight: 700; letter-spacing: 2px">VOL</span>
+<span style="{{st.lcdPill}}">{{volNum}}%</span>
+</div>
+</div>
+</div>
+
+<button type="button" aria-pressed="{{curFav}}" onClick="{{toggleCurFav}}" style="{{st.loveBtn}} height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; gap: 10px; font-family: 'Barlow Semi Condensed', sans-serif; font-weight: 700; font-size: 16px; letter-spacing: 2px; cursor: pointer">
+<span style="{{st.loveLed}} width: 7px; height: 7px; border-radius: 50%"></span>
+<svg width="20" height="20" viewBox="0 0 24 24" fill="{{curHeartFill}}" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z"></path></svg>
+<span>{{loveText}}</span>
+</button>
+
+</div>
+</sc-if>
+
+<sc-if value="{{isList}}" hint-placeholder-val="{{ false }}">
+<div style="flex-grow: 1; min-height: 0; box-sizing: border-box; padding: 20px 20px 12px; display: flex; flex-direction: column; gap: 12px">
+<div style="display: flex; align-items: center; justify-content: space-between; height: 44px">
+<h1 style="margin: 0; {{st.label}} font-size: 28px; font-weight: 700; letter-spacing: 4px">{{listTitle}}</h1>
+<span style="{{st.lcdPill}}">{{listCount}}</span>
+</div>
+
+<sc-if value="{{isLibrary}}" hint-placeholder-val="{{ true }}">
+<label style="display: flex; align-items: center; gap: 10px; height: 50px; box-sizing: border-box; padding: 0 14px; border-radius: 12px; background: {{t.lcdBg}}; box-shadow: {{t.pillShadow}}; color: {{lcdText}}; cursor: text">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.6" y2="16.6"></line></svg>
+<span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap">Search your music</span>
+<input type="search" value="{{query}}" onChange="{{onQuery}}" placeholder="SEARCH TITLE OR ARTIST" style="flex-grow: 1; min-width: 0; height: 44px; border: 0; outline: none; background: transparent; color: {{lcdText}}; font-family: 'Share Tech Mono', monospace; font-size: 16px; letter-spacing: 1px; text-transform: uppercase">
+</label>
+</sc-if>
+
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+<button type="button" onClick="{{playAll}}" style="{{st.btn}} height: 46px; border-radius: 12px; display: flex; align-items: center; justify-content: center; gap: 8px; font-family: 'Barlow Semi Condensed', sans-serif; font-weight: 700; font-size: 15px; letter-spacing: 2px; cursor: pointer">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"></path></svg>
+<span>PLAY ALL</span>
+</button>
+<button type="button" onClick="{{shuffleAll}}" style="{{st.btn}} height: 46px; border-radius: 12px; display: flex; align-items: center; justify-content: center; gap: 8px; font-family: 'Barlow Semi Condensed', sans-serif; font-weight: 700; font-size: 15px; letter-spacing: 2px; cursor: pointer">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg>
+<span>SHUFFLE</span>
+</button>
+</div>
+
+<div style="flex-grow: 1; min-height: 0; overflow-y: auto; border-radius: 14px; background: {{t.inset}}; box-shadow: {{t.insetShadow}}; padding: 2px 8px 2px 10px">
+<sc-for list="{{rows}}" as="r" hint-placeholder-count="7">
+<div style="{{r.rowStyle}}">
+<button type="button" onClick="{{r.onPlay}}" aria-label="{{r.playLabel}}" style="flex-grow: 1; min-width: 0; min-height: 62px; display: flex; align-items: center; gap: 12px; padding: 8px 2px; background: transparent; border: 0; text-align: left; cursor: pointer; color: inherit; font-family: inherit">
+<span style="{{r.coverStyle}} position: relative; width: 44px; height: 44px; flex-shrink: 0; border-radius: 5px; overflow: hidden">
+<sc-if value="{{r.isCur}}" hint-placeholder-val="{{ false }}">
+<span style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.55); display: flex; align-items: flex-end; justify-content: center; gap: 3px; padding-bottom: 12px; box-sizing: border-box">
+<span style="{{r.b1}}"></span><span style="{{r.b2}}"></span><span style="{{r.b3}}"></span>
+</span>
+</sc-if>
+</span>
+<span style="display: flex; flex-direction: column; min-width: 0; gap: 2px">
+<span style="{{r.titleStyle}}">{{r.title}}</span>
+<span style="{{r.subStyle}}">{{r.artist}} · {{r.time}}</span>
+</span>
+</button>
+<button type="button" aria-label="{{r.favLabel}}" aria-pressed="{{r.fav}}" onClick="{{r.onFav}}" style="{{r.heartStyle}}">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="{{r.heartFill}}" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z"></path></svg>
+</button>
+</div>
+</sc-for>
+
+<sc-if value="{{showEmptySearch}}" hint-placeholder-val="{{ false }}">
+<div style="padding: 48px 16px; display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center">
+<div style="{{st.label}} font-size: 16px; font-weight: 700; letter-spacing: 2px">NO MATCH</div>
+<div style="font-size: 15px; color: {{t.sub}}">Nothing in your library matches “{{query}}”.</div>
+</div>
+</sc-if>
+
+<sc-if value="{{showEmptyFav}}" hint-placeholder-val="{{ false }}">
+<div style="padding: 56px 16px; display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; color: {{t.sub}}">
+<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z"></path></svg>
+<div style="{{st.label}} font-size: 16px; font-weight: 700; letter-spacing: 2px">NO FAVORITES YET</div>
+<div style="font-size: 15px">Tap the heart on any track to keep it here.</div>
+</div>
+</sc-if>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{isSettings}}" hint-placeholder-val="{{ false }}">
+<div style="flex-grow: 1; min-height: 0; overflow-y: auto; box-sizing: border-box; padding: 20px 20px 12px; display: flex; flex-direction: column; gap: 12px">
+<div style="display: flex; align-items: center; height: 44px">
+<h1 style="margin: 0; {{st.label}} font-size: 28px; font-weight: 700; letter-spacing: 4px">SETTINGS</h1>
+</div>
+
+<div style="{{st.label}} font-size: 12px; font-weight: 700; letter-spacing: 2.5px; margin-top: 4px">APPEARANCE</div>
+<div style="{{st.module}} border-radius: 14px; padding: 4px 16px">
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 76px; border-bottom: 1px solid {{t.divider}}; box-shadow: 0 1px 0 {{t.dividerHi}}">
+<div style="display: flex; flex-direction: column; gap: 2px">
+<span style="font-size: 18px; font-weight: 700">Theme</span>
+<span style="font-size: 14px; color: {{t.sub}}">Chassis finish</span>
+</div>
+<div style="display: flex; gap: 6px">
+<button type="button" aria-pressed="{{dark}}" onClick="{{setDark}}" style="{{st.darkBtn}} width: 84px; height: 46px; border-radius: 10px; display: flex; align-items: center; justify-content: center; gap: 7px; font-family: 'Barlow Semi Condensed', sans-serif; font-weight: 700; font-size: 14px; letter-spacing: 1.5px; cursor: pointer; padding: 0">
+<span style="{{st.darkLed}} width: 6px; height: 6px; border-radius: 50%"></span>
+<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"></path></svg>
+<span>DARK</span>
+</button>
+<button type="button" aria-pressed="{{light}}" onClick="{{setLight}}" style="{{st.lightBtn}} width: 84px; height: 46px; border-radius: 10px; display: flex; align-items: center; justify-content: center; gap: 7px; font-family: 'Barlow Semi Condensed', sans-serif; font-weight: 700; font-size: 14px; letter-spacing: 1.5px; cursor: pointer; padding: 0">
+<span style="{{st.lightLed}} width: 6px; height: 6px; border-radius: 50%"></span>
+<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>
+<span>LIGHT</span>
+</button>
+</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 14px; padding: 16px 0 16px">
+<div style="display: flex; flex-direction: column; gap: 2px">
+<span style="font-size: 18px; font-weight: 700">Accent color</span>
+<span style="font-size: 14px; color: {{t.sub}}">Lights the display, LEDs and dials</span>
+</div>
+<div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px">
+<sc-for list="{{swatches}}" as="sw" hint-placeholder-count="4">
+<div style="display: flex; flex-direction: column; align-items: center; gap: 8px">
+<button type="button" aria-label="{{sw.aria}}" aria-pressed="{{sw.sel}}" onClick="{{sw.pick}}" style="{{sw.style}}"></button>
+<span style="{{sw.labelStyle}}">{{sw.name}}</span>
+</div>
+</sc-for>
+</div>
+</div>
+</div>
+
+<div style="{{st.label}} font-size: 12px; font-weight: 700; letter-spacing: 2.5px; margin-top: 4px">LIBRARY</div>
+<div style="{{st.module}} border-radius: 14px; padding: 4px 16px">
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 84px; border-bottom: 1px solid {{t.divider}}; box-shadow: 0 1px 0 {{t.dividerHi}}">
+<div style="display: flex; flex-direction: column; gap: 6px; min-width: 0">
+<span style="font-size: 18px; font-weight: 700">Music folder</span>
+<span style="{{st.lcdPill}} display: inline-flex; align-items: center; gap: 6px; align-self: flex-start">
+<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+<span>{{folderText}}</span>
+</span>
+</div>
+<button type="button" onClick="{{rescan}}" style="{{st.btn}} height: 46px; padding: 0 16px; border-radius: 10px; font-family: 'Barlow Semi Condensed', sans-serif; font-weight: 700; font-size: 14px; letter-spacing: 1.5px; cursor: pointer">RESCAN</button>
+</div>
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 64px">
+<span style="font-size: 18px; font-weight: 700">Tracks found</span>
+<span style="{{st.lcdPill}}">{{trkTotal}}</span>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{notPlayer}}" hint-placeholder-val="{{ false }}">
+<div style="flex-shrink: 0; padding: 0 12px 10px">
+<div style="background: {{t.bezel}}; border-radius: 14px; padding: 6px; box-shadow: {{t.bezelShadow}}; display: flex; align-items: center; gap: 6px">
+<button type="button" onClick="{{goPlayer}}" aria-label="{{miniLabel}}" style="flex-grow: 1; min-width: 0; position: relative; overflow: hidden; height: 52px; border-radius: 9px; border: 0; background: {{t.lcdBg}}; display: flex; align-items: center; gap: 10px; padding: 0 12px; text-align: left; cursor: pointer; color: {{lcdText}}">
+<span style="{{coverStyle}} width: 38px; height: 38px; flex-shrink: 0; border-radius: 5px"></span>
+<span style="display: flex; flex-direction: column; min-width: 0; gap: 2px">
+<span style="font-family: 'Orbitron', sans-serif; font-weight: 800; font-size: 13px; letter-spacing: 0.5px; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: {{lcdGlow}}">{{cur.title}}</span>
+<span style="font-family: 'Share Tech Mono', monospace; font-size: 12px; letter-spacing: 1px; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{cur.artist}} · {{posStr}}</span>
+</span>
+<span style="position: absolute; left: 0; bottom: 0; height: 2px; width: {{pct}}%; background: {{lcdText}}"></span>
+</button>
+<button type="button" aria-label="{{playLabel}}" onClick="{{togglePlay}}" style="{{st.btn}} width: 52px; height: 52px; flex-shrink: 0; border-radius: 10px; display: flex; align-items: center; justify-content: center; padding: 0; cursor: pointer">
+<sc-if value="{{playing}}" hint-placeholder-val="{{ true }}">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"></rect><rect x="14" y="5" width="4" height="14" rx="1"></rect></svg>
+</sc-if>
+<sc-if value="{{paused}}" hint-placeholder-val="{{ false }}">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"></path></svg>
+</sc-if>
+</button>
+<button type="button" aria-label="Next track" onClick="{{next}}" style="{{st.btn}} width: 52px; height: 52px; flex-shrink: 0; border-radius: 10px; display: flex; align-items: center; justify-content: center; padding: 0; cursor: pointer">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4l10 8-10 8V4z"></path><line x1="19" y1="5" x2="19" y2="19"></line></svg>
+</button>
+</div>
+</div>
+</sc-if>
+
+<nav aria-label="Main" style="flex-shrink: 0; height: 84px; box-sizing: border-box; padding: 8px 10px 12px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; background: {{t.navBg}}; box-shadow: {{t.navShadow}}">
+<button type="button" onClick="{{goLibrary}}" style="{{nav.library.btn}}">
+<span style="{{nav.library.led}}"></span>
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
+<span>LIBRARY</span>
+</button>
+<button type="button" onClick="{{goFavorites}}" style="{{nav.favorites.btn}}">
+<span style="{{nav.favorites.led}}"></span>
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z"></path></svg>
+<span>FAVORITES</span>
+</button>
+<button type="button" onClick="{{goPlayer}}" style="{{nav.player.btn}}">
+<span style="{{nav.player.led}}"></span>
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="2.5"></circle></svg>
+<span>PLAYING</span>
+</button>
+<button type="button" onClick="{{goSettings}}" style="{{nav.settings.btn}}">
+<span style="{{nav.settings.led}}"></span>
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>
+<span>SETTINGS</span>
+</button>
+</nav>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"screen":{"editor":"enum","options":["library","player","favorites","settings"],"default":"player"},"dark":{"editor":"boolean","default":true},"accent":{"editor":"color","default":"#27B4E6","options":["#27B4E6","#F0A330","#E5544B","#7CC957"]},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  S() {
+    const d = { pos: 63, playing: true, cur: 1, shuffle: false, repeat: false, vol: 0.72, favs: [1, 3, 6, 8, 11], query: '', scanning: false };
+    return Object.assign(d, this.state || {});
+  }
+  tracks() {
+    return [
+      { id: 1, title: 'Paper Satellites', artist: 'Juniper Lane', dur: 225 },
+      { id: 2, title: 'Slow Motion Neon', artist: 'The Low Hum', dur: 252 },
+      { id: 3, title: 'Copper Skies', artist: 'Marisol Vega', dur: 208 },
+      { id: 4, title: 'Tape Hiss Lullaby', artist: 'Oslo Radio Club', dur: 176 },
+      { id: 5, title: 'Late Train Home', artist: 'Juniper Lane', dur: 280 },
+      { id: 6, title: 'Velvet Static', artist: 'Kite & Compass', dur: 199 },
+      { id: 7, title: 'Afterglow Avenue', artist: 'The Low Hum', dur: 302 },
+      { id: 8, title: 'Magnetic North', artist: 'Ada Fontaine', dur: 231 },
+      { id: 9, title: 'Honey in the Wires', artist: 'Kite & Compass', dur: 187 },
+      { id: 10, title: 'Soft Machine Summer', artist: 'Oslo Radio Club', dur: 264 },
+      { id: 11, title: 'Lanterns', artist: 'Marisol Vega', dur: 213 },
+      { id: 12, title: 'Quiet Frequencies', artist: 'Ada Fontaine', dur: 245 }
+    ];
+  }
+  hx(h) {
+    h = String(h).replace('#', '');
+    return [0, 2, 4].map((i) => parseInt(h.substr(i, 2), 16));
+  }
+  mix(a, b, k) {
+    const A = this.hx(a), B = this.hx(b);
+    return '#' + A.map((v, i) => Math.round(v + (B[i] - v) * k).toString(16).padStart(2, '0')).join('');
+  }
+  rgba(a, al) {
+    const A = this.hx(a);
+    return 'rgba(' + A[0] + ',' + A[1] + ',' + A[2] + ',' + al + ')';
+  }
+  fmt(sec) {
+    sec = Math.max(0, Math.floor(sec));
+    return Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0');
+  }
+  componentDidMount() {
+    this.tick = setInterval(() => this.step(), 1000);
+  }
+  componentWillUnmount() {
+    clearInterval(this.tick);
+    clearTimeout(this.scanT);
+  }
+  step() {
+    const s = this.S();
+    if (!s.playing) return;
+    const tr = this.tracks()[s.cur - 1];
+    if (s.pos + 1 >= tr.dur) {
+      if (s.repeat) this.setState({ pos: 0 });
+      else this.next();
+    } else {
+      this.setState({ pos: s.pos + 1 });
+    }
+  }
+  next() {
+    const s = this.S();
+    const n = this.tracks().length;
+    let id;
+    if (s.shuffle) {
+      id = s.cur;
+      while (id === s.cur) id = 1 + Math.floor(Math.random() * n);
+    } else {
+      id = (s.cur % n) + 1;
+    }
+    this.setState({ cur: id, pos: 0 });
+  }
+  prev() {
+    const s = this.S();
+    const n = this.tracks().length;
+    if (s.pos > 3) this.setState({ pos: 0 });
+    else this.setState({ cur: s.cur === 1 ? n : s.cur - 1, pos: 0 });
+  }
+  toggleFav(id) {
+    const s = this.S();
+    const favs = s.favs.indexOf(id) >= 0 ? s.favs.filter((f) => f !== id) : s.favs.concat([id]);
+    this.setState({ favs: favs });
+  }
+  renderVals() {
+    const s = this.S();
+    const P = this.props || {};
+    const dark = s.dark ?? (P.dark ?? true);
+    let accent = s.accent ?? (P.accent ?? '#27B4E6');
+    if (!/^#[0-9a-fA-F]{6}$/.test(accent)) accent = '#27B4E6';
+    const screen = s.screen ?? (P.screen ?? 'player');
+    const mix = (a, b, k) => this.mix(a, b, k);
+    const rgba = (a, al) => this.rgba(a, al);
+
+    const accentText = dark ? accent : mix(accent, '#000000', 0.45);
+    const accentGlow = rgba(accent, 0.7);
+    const lcdText = dark ? accent : mix(accent, '#ffffff', 0.82);
+    const lcdDim = dark ? rgba(accent, 0.16) : 'rgba(255,255,255,0.14)';
+    const lcdGlow = dark ? '0 0 10px ' + rgba(accent, 0.65) : '0 0 8px ' + rgba(lcdText, 0.5);
+
+    const t = dark ? {
+      chassis: 'repeating-linear-gradient(90deg, rgba(255,255,255,0.02) 0 1px, rgba(0,0,0,0.025) 1px 3px), linear-gradient(180deg, #3b3e42 0%, #2c2e31 55%, #25272a 100%)',
+      text: '#dfe2e5', sub: '#a3a9af', label: '#a3a9af', labelShadow: '0 -1px 0 rgba(0,0,0,0.75)',
+      inset: '#1d1f22', insetShadow: 'inset 0 2px 6px rgba(0,0,0,0.7), 0 1px 0 rgba(255,255,255,0.07)',
+      groove: '#141517', grooveShadow: 'inset 0 1px 3px rgba(0,0,0,0.8), 0 1px 0 rgba(255,255,255,0.08)',
+      btn: 'linear-gradient(180deg, #4c5055 0%, #33363a 100%)', btnBorder: '#141517', btnShadow: '0 2px 4px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.15)', btnText: '#d4d8dc',
+      btnOn: 'linear-gradient(180deg, #232528 0%, #2e3134 100%)', btnOnShadow: 'inset 0 2px 5px rgba(0,0,0,0.75), 0 1px 0 rgba(255,255,255,0.07)',
+      ledOff: '#141618', ledOffShadow: 'inset 0 1px 2px rgba(0,0,0,0.9), 0 1px 0 rgba(255,255,255,0.08)',
+      bezel: 'linear-gradient(180deg, #17181a, #222427)', bezelShadow: 'inset 0 1px 3px rgba(0,0,0,0.8), 0 1px 0 rgba(255,255,255,0.08)',
+      module: 'linear-gradient(180deg, #36393d 0%, #2c2e32 100%)', moduleBorder: '#18191b', moduleShadow: '0 2px 6px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.09)', moduleSolid: '#303337',
+      knob: 'conic-gradient(from 10deg, #62666c, #2f3236 12%, #585c61 25%, #2c2f33 38%, #63676d 50%, #303337 62%, #595d62 75%, #2b2e32 88%, #62666c)',
+      knobShadow: '0 8px 16px rgba(0,0,0,0.6), 0 2px 3px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.22)',
+      ringTrack: '#15171a', playIcon: accent,
+      navBg: 'linear-gradient(180deg, #25272a 0%, #1b1c1f 100%)', navShadow: 'inset 0 1px 0 rgba(255,255,255,0.07), 0 -1px 0 rgba(0,0,0,0.7)',
+      navText: '#a3a9af', navOn: accent, navLabelShadow: '0 -1px 0 rgba(0,0,0,0.8)',
+      divider: 'rgba(0,0,0,0.55)', dividerHi: 'rgba(255,255,255,0.05)',
+      pillShadow: 'inset 0 1px 3px rgba(0,0,0,0.7), 0 1px 0 rgba(255,255,255,0.08)',
+      lcdBg: 'linear-gradient(180deg, #0d181b 0%, #081113 100%)',
+      vuFace: 'radial-gradient(ellipse at 50% 100%, ' + mix(accent, '#ffffff', 0.6) + ' 0%, ' + accent + ' 55%, ' + mix(accent, '#000000', 0.45) + ' 100%)',
+      vuInk: mix(accent, '#000000', 0.82), vuNeedle: '#101214', vuCap: '#1b1c1f'
+    } : {
+      chassis: 'repeating-linear-gradient(90deg, rgba(255,255,255,0.22) 0 1px, rgba(0,0,0,0.02) 1px 3px), linear-gradient(180deg, #efece6 0%, #dedad1 60%, #d3cec4 100%)',
+      text: '#2a2824', sub: '#5e5a52', label: '#56524a', labelShadow: '0 1px 0 rgba(255,255,255,0.9)',
+      inset: '#e2ded5', insetShadow: 'inset 0 2px 5px rgba(0,0,0,0.2), 0 1px 0 rgba(255,255,255,0.95)',
+      groove: '#bdb8ad', grooveShadow: 'inset 0 1px 3px rgba(0,0,0,0.35), 0 1px 0 rgba(255,255,255,0.9)',
+      btn: 'linear-gradient(180deg, #fdfcf9 0%, #dcd8ce 100%)', btnBorder: '#a39e93', btnShadow: '0 2px 3px rgba(0,0,0,0.2), inset 0 1px 0 #ffffff', btnText: '#3a3833',
+      btnOn: 'linear-gradient(180deg, #cdc9bf 0%, #dfdbd2 100%)', btnOnShadow: 'inset 0 2px 4px rgba(0,0,0,0.3), 0 1px 0 rgba(255,255,255,0.9)',
+      ledOff: '#b3aea3', ledOffShadow: 'inset 0 1px 2px rgba(0,0,0,0.35), 0 1px 0 rgba(255,255,255,0.9)',
+      bezel: 'linear-gradient(180deg, #b6b1a6, #ccc7bc)', bezelShadow: 'inset 0 1px 3px rgba(0,0,0,0.3), 0 1px 0 rgba(255,255,255,0.9)',
+      module: 'linear-gradient(180deg, #f4f2ed 0%, #e1ddd4 100%)', moduleBorder: '#b3aea3', moduleShadow: '0 2px 5px rgba(0,0,0,0.15), inset 0 1px 0 #ffffff', moduleSolid: '#e9e6df',
+      knob: 'conic-gradient(from 10deg, #f6f6f4, #9d9d9a 12%, #ececea 25%, #8f8f8c 38%, #f7f7f5 50%, #9a9a97 62%, #eeeeec 75%, #8d8d8a 88%, #f6f6f4)',
+      knobShadow: '0 8px 14px rgba(0,0,0,0.28), 0 2px 3px rgba(0,0,0,0.25), inset 0 1px 0 #ffffff',
+      ringTrack: '#bdb8ad', playIcon: '#34322d',
+      navBg: 'repeating-linear-gradient(90deg, rgba(60,30,10,0.12) 0 1px, rgba(0,0,0,0) 1px 6px, rgba(255,220,180,0.06) 6px 7px, rgba(0,0,0,0) 7px 13px), linear-gradient(180deg, #8a5a30 0%, #6b401e 100%)',
+      navShadow: 'inset 0 1px 0 rgba(255,225,190,0.3), 0 -1px 0 rgba(60,35,15,0.5)',
+      navText: '#f6e7d0', navOn: '#ffffff', navLabelShadow: '0 -1px 0 rgba(0,0,0,0.45)',
+      divider: 'rgba(0,0,0,0.12)', dividerHi: 'rgba(255,255,255,0.8)',
+      pillShadow: 'inset 0 1px 3px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.9)',
+      lcdBg: 'linear-gradient(180deg, ' + mix(accent, '#062630', 0.5) + ' 0%, ' + mix(accent, '#041a21', 0.7) + ' 100%)',
+      vuFace: 'radial-gradient(ellipse at 50% 100%, #fff4d2 0%, #f3c96f 55%, #cf8c2f 100%)',
+      vuInk: '#3b2710', vuNeedle: '#2a1c0b', vuCap: '#3a3833'
+    };
+
+    const bevel = (on) => on
+      ? 'background: ' + t.btnOn + '; border: 1px solid ' + t.btnBorder + '; box-shadow: ' + t.btnOnShadow + '; color: ' + accentText + ';'
+      : 'background: ' + t.btn + '; border: 1px solid ' + t.btnBorder + '; box-shadow: ' + t.btnShadow + '; color: ' + t.btnText + ';';
+    const led = (on) => on
+      ? 'background: ' + accent + '; box-shadow: 0 0 7px ' + rgba(accent, 0.95) + ', 0 0 2px ' + accent + ';'
+      : 'background: ' + t.ledOff + '; box-shadow: ' + t.ledOffShadow + ';';
+
+    const tracks = this.tracks();
+    const cur = tracks[s.cur - 1];
+    const favSet = {};
+    s.favs.forEach((f) => { favSet[f] = true; });
+    const curFav = !!favSet[cur.id];
+
+    const bars = [];
+    const heights = [];
+    for (let i = 0; i < 28; i++) {
+      const a = Math.sin(i * 1.9 + s.pos * 2.7);
+      const b = Math.sin(i * 0.45 + s.pos * 1.3);
+      const env = 1 - Math.abs(i - 8) / 34;
+      const v = s.playing ? (0.22 + 0.78 * Math.abs(a * 0.6 + b * 0.4)) * env : 0.06;
+      const h = Math.max(3, Math.round(48 * v));
+      heights.push(h);
+      bars.push({
+        ghost: 'width: 7px; height: 48px; display: flex; align-items: flex-end; background: repeating-linear-gradient(0deg, ' + lcdDim + ' 0 3px, rgba(0,0,0,0) 3px 5px);',
+        lit: 'width: 7px; height: ' + h + 'px; background: repeating-linear-gradient(0deg, ' + lcdText + ' 0 3px, rgba(0,0,0,0) 3px 5px);'
+      });
+    }
+    const miniBar = (h, max) => 'width: 4px; height: ' + Math.max(3, Math.round(h * max / 48)) + 'px; background: ' + lcdText + '; border-radius: 1px;';
+    const rowBar = (h) => 'width: 4px; height: ' + Math.max(3, Math.round(h * 18 / 48)) + 'px; background: ' + accent + '; box-shadow: 0 0 5px ' + rgba(accent, 0.8) + '; border-radius: 1px;';
+
+    const coverFor = (id) => {
+      const p = [
+        ['#f2c14e', '#f78154', '#4d9078'], ['#ff6ec7', '#3a0ca3', '#4cc9f0'], ['#e07a5f', '#3d405b', '#f2cc8f'],
+        ['#d8e2dc', '#9d8189', '#ffcad4'], ['#264653', '#2a9d8f', '#e9c46a'], ['#6d597a', '#b56576', '#eaac8b'],
+        ['#ff9f1c', '#2ec4b6', '#011627'], ['#577590', '#43aa8b', '#f9c74f'], ['#f4a261', '#e76f51', '#fefae0'],
+        ['#8ecae6', '#219ebc', '#ffb703'], ['#ffbe0b', '#fb5607', '#3a0ca3'], ['#adb5bd', '#495057', '#90e0ef']
+      ][(id - 1) % 12];
+      return 'background: radial-gradient(circle at 68% 34%, ' + p[2] + ' 0 17%, rgba(0,0,0,0) 18%), repeating-linear-gradient(0deg, rgba(0,0,0,0.08) 0 2px, rgba(0,0,0,0) 2px 7px), linear-gradient(135deg, ' + p[0] + ' 0%, ' + p[1] + ' 100%); border: 1px solid rgba(0,0,0,0.5); box-shadow: 0 2px 5px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.3); box-sizing: border-box;';
+    };
+    const coverStyle = coverFor(cur.id);
+    const pct = Math.min(100, (s.pos / cur.dur) * 100);
+    const vol = Math.max(0, Math.min(1, s.vol));
+    const volDeg = Math.round(vol * 270);
+    const needle = s.playing ? Math.min(48, -40 + 88 * vol * (0.55 + 0.45 * Math.abs(Math.sin(s.pos * 1.3)))) : -50;
+
+    const q = String(s.query || '').trim().toLowerCase();
+    const isLibrary = screen === 'library';
+    const isFavorites = screen === 'favorites';
+    let list = isFavorites ? tracks.filter((tr) => favSet[tr.id]) : tracks;
+    if (isLibrary && q) list = list.filter((tr) => (tr.title + ' ' + tr.artist).toLowerCase().indexOf(q) >= 0);
+
+    const rows = list.map((tr, i) => {
+      const fav = !!favSet[tr.id];
+      const isCur = tr.id === s.cur;
+      const last = i === list.length - 1;
+      return {
+        num: String(tr.id).padStart(2, '0'),
+        title: tr.title, artist: tr.artist, time: this.fmt(tr.dur),
+        isCur: isCur, notCur: !isCur, fav: fav,
+        coverStyle: coverFor(tr.id),
+        rowStyle: 'display: flex; align-items: center; gap: 4px;' + (last ? '' : ' border-bottom: 1px solid ' + t.divider + '; box-shadow: 0 1px 0 ' + t.dividerHi + ';'),
+        numStyle: 'width: 28px; flex-shrink: 0; font-family: \'Share Tech Mono\', monospace; font-size: 14px; color: ' + t.sub + '; text-align: center;',
+        titleStyle: 'font-size: 17px; font-weight: 700; letter-spacing: 0.3px; color: ' + (isCur ? accentText : t.text) + '; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;',
+        subStyle: 'font-size: 14px; font-weight: 500; color: ' + t.sub + '; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;',
+        heartStyle: 'width: 44px; height: 44px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; padding: 0; border: 0; background: transparent; cursor: pointer; color: ' + (fav ? accentText : t.sub) + ';',
+        heartFill: fav ? accentText : 'none',
+        b1: rowBar(s.playing ? heights[3] : 10), b2: rowBar(s.playing ? heights[9] : 18), b3: rowBar(s.playing ? heights[15] : 13),
+        playLabel: 'Play ' + tr.title + ' by ' + tr.artist,
+        favLabel: fav ? 'Remove ' + tr.title + ' from favorites' : 'Add ' + tr.title + ' to favorites',
+        onPlay: () => this.setState({ cur: tr.id, pos: 0, playing: true }),
+        onFav: () => this.toggleFav(tr.id)
+      };
+    });
+
+    const accents = [
+      { c: '#27B4E6', name: 'BLUE' }, { c: '#F0A330', name: 'AMBER' },
+      { c: '#E5544B', name: 'RED' }, { c: '#7CC957', name: 'GREEN' }
+    ];
+    const swatches = accents.map((a) => {
+      const sel = a.c.toLowerCase() === accent.toLowerCase();
+      return {
+        name: a.name, sel: sel, aria: a.name.charAt(0) + a.name.slice(1).toLowerCase() + ' accent',
+        pick: () => this.setState({ accent: a.c }),
+        style: 'width: 46px; height: 46px; border-radius: 50%; padding: 0; cursor: pointer; border: 1px solid ' + t.btnBorder + '; background: radial-gradient(circle at 35% 30%, rgba(255,255,255,0.85) 0 7%, ' + a.c + ' 34%, ' + mix(a.c, '#000000', 0.45) + ' 100%); box-shadow: ' + (sel ? '0 0 0 3px ' + t.moduleSolid + ', 0 0 0 5px ' + accentText + ', 0 0 16px ' + rgba(a.c, 0.8) : '0 2px 3px rgba(0,0,0,0.35)') + ';',
+        labelStyle: 'font-size: 12px; font-weight: 700; letter-spacing: 1.5px; color: ' + (sel ? accentText : t.sub) + ';'
+      };
+    });
+
+    const navItem = (on) => ({
+      btn: 'display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-height: 60px; padding: 0; border: 0; border-radius: 10px; background: transparent; cursor: pointer; font-family: \'Barlow Semi Condensed\', sans-serif; font-weight: 700; font-size: 12px; letter-spacing: 1.5px; text-shadow: ' + t.navLabelShadow + '; color: ' + (on ? t.navOn : t.navText) + ';',
+      led: 'width: 6px; height: 6px; border-radius: 50%; ' + led(on)
+    });
+
+    const st = {
+      btn: bevel(false),
+      shufBtn: bevel(s.shuffle), shufLed: led(s.shuffle),
+      repBtn: bevel(s.repeat), repLed: led(s.repeat),
+      loveBtn: bevel(curFav), loveLed: led(curFav),
+      darkBtn: bevel(dark), darkLed: led(dark),
+      lightBtn: bevel(!dark), lightLed: led(!dark),
+      label: 'color: ' + t.label + '; text-shadow: ' + t.labelShadow + ';',
+      module: 'background: ' + t.module + '; border: 1px solid ' + t.moduleBorder + '; box-shadow: ' + t.moduleShadow + ';',
+      lcdPill: 'font-family: \'Share Tech Mono\', monospace; font-size: 13px; letter-spacing: 1px; color: ' + lcdText + '; background: ' + t.lcdBg + '; padding: 5px 10px; border-radius: 6px; box-shadow: ' + t.pillShadow + '; text-shadow: ' + lcdGlow + '; white-space: nowrap;'
+    };
+
+    const dim = dark ? rgba(accent, 0.25) : 'rgba(255,255,255,0.3)';
+    const go = (sc) => () => this.setState({ screen: sc });
+
+    return {
+      t: t, st: st, accent: accent, accentGlow: accentGlow, lcdText: lcdText, lcdGlow: lcdGlow,
+      dark: dark, light: !dark,
+      isPlayer: screen === 'player', notPlayer: screen !== 'player',
+      isList: isLibrary || isFavorites, isLibrary: isLibrary, isSettings: screen === 'settings',
+      listTitle: isFavorites ? 'FAVORITES' : 'LIBRARY',
+      listCount: isFavorites ? s.favs.length + ' SAVED' : (q ? rows.length + ' / ' + tracks.length : tracks.length + ' TRACKS'),
+      rows: rows,
+      showEmptySearch: isLibrary && rows.length === 0,
+      showEmptyFav: isFavorites && rows.length === 0,
+      query: s.query,
+      cur: cur, pos: s.pos,
+      coverStyle: coverStyle, coverLabel: 'Cover art for ' + cur.title,
+      trkNum: String(cur.id).padStart(2, '0'), trkTotal: String(tracks.length),
+      posStr: this.fmt(s.pos), durStr: this.fmt(cur.dur), remStr: this.fmt(cur.dur - s.pos),
+      pct: pct.toFixed(2), thumbLeft: Math.round(pct / 100 * 328),
+      bars: bars,
+      mini: { b1: miniBar(heights[2], 20), b2: miniBar(heights[7], 20), b3: miniBar(heights[12], 20), b4: miniBar(heights[18], 20) },
+      ind: { shuf: s.shuffle ? lcdText : dim, rep: s.repeat ? lcdText : dim, fav: curFav ? lcdText : dim },
+      playWord: s.playing ? 'PLAY' : 'PAUSE',
+      playing: s.playing, paused: !s.playing,
+      playLabel: s.playing ? 'Pause' : 'Play',
+      playRing: s.playing ? t.grooveShadow + ', 0 0 14px ' + rgba(accent, 0.45) : t.grooveShadow,
+      shuffle: s.shuffle, repeat: s.repeat,
+      curFav: curFav, curHeartFill: curFav ? accentText : 'none', loveText: curFav ? 'LOVED' : 'LOVE THIS',
+      volNum: Math.round(vol * 100), knobDeg: Math.round(-135 + vol * 270),
+      volRing: 'conic-gradient(from 225deg, ' + accent + ' 0deg ' + volDeg + 'deg, ' + t.ringTrack + ' ' + volDeg + 'deg 270deg, rgba(0,0,0,0) 270deg 360deg)',
+      needle: needle.toFixed(1),
+      swatches: swatches,
+      folderText: s.scanning ? 'SCANNING…' : '/storage/Music',
+      miniLabel: 'Open now playing: ' + cur.title + ' by ' + cur.artist,
+      nav: { library: navItem(isLibrary), favorites: navItem(isFavorites), player: navItem(screen === 'player'), settings: navItem(screen === 'settings') },
+      goLibrary: go('library'), goFavorites: go('favorites'), goPlayer: go('player'), goSettings: go('settings'),
+      togglePlay: () => this.setState({ playing: !s.playing }),
+      next: () => this.next(),
+      prev: () => this.prev(),
+      toggleShuffle: () => this.setState({ shuffle: !s.shuffle }),
+      toggleRepeat: () => this.setState({ repeat: !s.repeat }),
+      toggleCurFav: () => this.toggleFav(cur.id),
+      onSeek: (e) => this.setState({ pos: Number(e.target.value) }),
+      onVol: (e) => this.setState({ vol: Number(e.target.value) / 100 }),
+      onQuery: (e) => this.setState({ query: e.target.value }),
+      playAll: () => { if (list.length) this.setState({ cur: list[0].id, pos: 0, playing: true, shuffle: false, screen: 'player' }); },
+      shuffleAll: () => { if (list.length) this.setState({ cur: list[Math.floor(Math.random() * list.length)].id, pos: 0, playing: true, shuffle: true, screen: 'player' }); },
+      setDark: () => this.setState({ dark: true }),
+      setLight: () => this.setState({ dark: false }),
+      rescan: () => {
+        this.setState({ scanning: true });
+        clearTimeout(this.scanT);
+        this.scanT = setTimeout(() => this.setState({ scanning: false }), 1600);
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>
