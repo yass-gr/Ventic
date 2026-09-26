@@ -10,14 +10,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -26,7 +24,6 @@ import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
-import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.yass.vintageplayer.ui.theme.LocalVintage
@@ -133,21 +130,20 @@ fun VuMeter(
     val gloss = remember {
         Brush.verticalGradient(0f to Color.White.copy(alpha = 0.28f), 1f to Color.Transparent)
     }
-    // Face brush depends on layout size: cache it on size/theme changes so the
-    // per-frame draw path allocates nothing.
-    var facePx by remember { mutableStateOf(IntSize.Zero) }
-    val faceBrush = remember(tokens, facePx) {
-        tokens.vuFaceBrush(
-            center = Offset(facePx.width / 2f, facePx.height * (118f / 126f)),
-            radius = facePx.width.coerceAtMost((facePx.height * (200f / 126f)).toInt()) * 0.64f,
-        )
-    }
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(8.dp))
             .background(tokens.vuFaceInner)
-            .onSizeChanged { facePx = it }
-            .drawBehind { drawRect(faceBrush) },
+            // drawWithCache always sees the real size and rebuilds the brush only when it changes.
+            .drawWithCache {
+                val radius = minOf(size.width, size.height * (200f / 126f)) * 0.64f
+                val faceBrush = if (radius > 0f) {
+                    tokens.vuFaceBrush(Offset(size.width / 2f, size.height * (118f / 126f)), radius)
+                } else {
+                    null
+                }
+                onDrawBehind { if (faceBrush != null) drawRect(faceBrush) }
+            },
     ) {
         Canvas(modifier = Modifier.fillMaxWidth().aspectRatio(200f / 126f)) {
             val sx = size.width / 200f
