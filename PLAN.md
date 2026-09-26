@@ -128,7 +128,7 @@ Source of truth: `design/Main.component.html` (the `t` token object, `bevel()`, 
 5. `ui/VintageAppUi.kt`: chassis background, `AnimatedContent`-free screen switch (just `when`, instant), mini player on non-player screens, bottom nav. System back: from PLAYER/FAVORITES/SETTINGS go to LIBRARY, then exit.
 6. `MainActivity.kt`: `enableEdgeToEdge()`, status/nav bar icon colours follow theme, window insets padding, permission gate (READ_MEDIA_AUDIO / READ_EXTERNAL_STORAGE + POST_NOTIFICATIONS) styled as a vintage LCD card with a GRANT ACCESS bevel button; on grant → `library.start()`. `onStart` → `player.connect()`. Restore the last track after the library emits.
 
-### Wave 3 — Lead review & hardening
+### Wave 3 — Lead review & hardening ✅ (device smoke test pending)
 1. Merge branches, remove stubs, wire `AppGraph` (A + B implementations, `SupervisorJob + Dispatchers.Default` app scope).
 2. Code review against this plan + the design (tokens, sizes, spacing).
 3. `./gradlew assembleDebug assembleRelease lint`.
