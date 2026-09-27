@@ -67,7 +67,11 @@ The UI started as a Claude Design mock-up (`design/Main.component.html`). Its co
 
 ## Release video
 
-[`docs/video/ventic-release.mp4`](docs/video/ventic-release.mp4) is a 24-second motion graphic, generated entirely in code by [`make_video.py`](docs/video/make_video.py). Python and Pillow draw every frame, numpy synthesizes a 120 BPM soundtrack, and ffmpeg encodes the result. The phone footage is a real screen recording of the app, and the spectrum in the typing scene is an FFT of the video's own soundtrack.
+[`docs/video/ventic-release.mp4`](docs/video/ventic-release.mp4) is a 37-second, 1080p60 trailer made entirely in code. The source is in [`promo/`](promo):
+
+- **Soundtrack:** an original chill lo-fi funk track, composed and synthesized from scratch in Python (Karplus-Strong bass and guitar, FM Rhodes, synth brass, synthesized drums, vinyl scratch and record stop), mastered to −14 LUFS.
+- **Visuals:** React components rendered with [Remotion](https://www.remotion.dev/). Cuts, flashes and animations follow the soundtrack's beats and spectrum.
+- **Footage:** real screen recordings of the app on a Redmi Note 10S.
 
 ## Credits
 

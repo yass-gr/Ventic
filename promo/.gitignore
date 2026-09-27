@@ -1,0 +1,8 @@
+node_modules/
+.venv/
+out/
+public/footage/
+public/*.wav
+audio/stems/
+audio/*.wav
+__pycache__/
