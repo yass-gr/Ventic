@@ -1,32 +1,46 @@
+<p align="center">
+  <img src="docs/poster.png" alt="Ventic — a vintage hi-fi music player for Android" width="100%">
+</p>
+
+<p align="center">
+  <a href="https://github.com/yass-gr/Ventic/releases/latest"><b>⬇ Download the APK</b></a>
+  &nbsp;·&nbsp; Android 10+ &nbsp;·&nbsp; 3.8 MB &nbsp;·&nbsp; no internet permission
+</p>
+
 # Ventic
 
-**A vintage hi-fi music player for Android that only plays the music already on your phone.**
-
-Brushed-metal chassis, a glowing LCD, a live spectrum analyser, a swinging VU needle and a real rotary volume knob. It has no accounts, no streaming and no network access. The app does not even request the `INTERNET` permission.
+Ventic is a music player styled like a piece of 70s hi-fi gear. It has a brushed-metal chassis, a glowing LCD, a 28-band spectrum analyser, a swinging VU needle and a rotary volume knob. It plays **only the music already on your phone**: no accounts, no streaming, no ads, no tracking. The app does not even request the `INTERNET` permission.
 
 ## Features
 
-- **Local library, instantly.** Songs are read from Android's MediaStore and cached on disk, so the list appears on the first frame, before the device is re-queried. Changes to your music are picked up automatically.
-- **Real audio visualisation.** The 28-band spectrum and the VU meter are driven by an FFT that runs inside the audio pipeline (a Media3 `AudioProcessor`). They react to the actual music and need no microphone permission.
-- **Background playback.** Plays through a `MediaSessionService` with lock-screen and notification controls, audio focus handling and pause on headphone unplug.
-- **Four screens:** Library (search, play all, shuffle), Favorites, Now Playing and Settings.
-- **Themes:** dark gunmetal or light cream-and-walnut chassis, with blue, amber, red or green accent lighting.
-- **Remembers everything:** favorites, theme, accent, volume, shuffle/repeat, the music-folder filter, and the last track with its position.
+- **Instant library.** Every song on the device is read from Android's MediaStore and cached to disk, so your library is on screen from the first frame, even with thousands of tracks. Songs you add or delete are picked up automatically.
+- **Real audio visualisation.** The spectrum bars and the VU needle are driven by a hand-written FFT that runs inside the audio pipeline. They react to the actual music and need no microphone permission.
+- **The volume knob is your phone's volume.** Turn the knob and the media volume changes; press the volume keys and the knob turns, with a haptic detent at each step.
+- **Background playback** with lock-screen and notification controls, audio focus, and pause on headphone unplug.
+- **Library** with search, *Play all* and *Shuffle*. **Favorites** saved with one tap. **Now Playing** with shuffle, repeat-one and seek.
+- **Themes:** a dark gunmetal or light cream-and-walnut chassis, with blue, amber, red or green accent lighting.
+- **Remembers everything:** favorites, theme, accent, shuffle/repeat, the music-folder filter, and the last track with its exact position.
 
-## Built for speed
+## Performance
+
+Measured on a Redmi Note 10S (Android 13) with a 1,940-track library.
 
 | | |
 |---|---|
-| Release APK | ~3.9 MB (R8 + resource shrinking) |
-| UI | Jetpack Compose (foundation only, no Material) |
-| Per-frame animation | Spectrum, VU needle and seek bar read state in the draw phase only, so there is no recomposition per frame |
-| Audio analysis | Hand-written radix-2 FFT with no allocation on the audio thread |
-| Startup | Binary library cache, manual DI, baseline-profile installer |
+| Cold start | **370–540 ms** |
+| APK size | **3.8 MB** (R8 + resource shrinking) |
+| Animation | Spectrum, VU and seek bar redraw in the draw phase only, so there is no recomposition per frame |
+| Audio analysis | Radix-2 FFT with no allocation on the audio thread, published at ~30 Hz |
+
+## Install
+
+Download `Ventic-v1.0.0.apk` from [Releases](https://github.com/yass-gr/Ventic/releases/latest), open it on your phone and allow installing from unknown sources. On first launch, grant access to your audio files.
+
+> The release APK is signed with a development key. Android will install it normally, but updates must be signed with the same key.
 
 ## Tech stack
 
-Kotlin · Jetpack Compose · Media3 ExoPlayer + MediaSession · DataStore · Coroutines/Flow.
-minSdk 29 (Android 10) · targetSdk 36.
+**Kotlin** · **Jetpack Compose** (foundation only, no Material) · **Media3 ExoPlayer + MediaSession** · DataStore · Coroutines/Flow · minSdk 29, targetSdk 36.
 
 ```
 app/src/main/java/com/yass/vintageplayer/
@@ -35,21 +49,20 @@ app/src/main/java/com/yass/vintageplayer/
 └── ui/         theme tokens, skeuomorphic components, screens, ViewModel
 ```
 
-## Building
+## Build from source
 
 Requirements: JDK 17+ and the Android SDK (platform 36).
 
 ```bash
+git clone https://github.com/yass-gr/Ventic.git && cd Ventic
 echo "sdk.dir=$HOME/Android/Sdk" > local.properties
-./gradlew assembleRelease     # app/build/outputs/apk/release/app-release.apk
+./gradlew assembleRelease     # → app/build/outputs/apk/release/app-release.apk
 ./gradlew installDebug        # install on a connected device
 ```
 
-The release build is signed with the debug key so you can install it for local testing. Use your own keystore before distributing it.
+## How it was made
 
-## Design
-
-The UI is a direct port of a Claude Design mock-up (`design/Main.component.html`). Colours, gradients, bevels, LED glows and spacing are taken from its token set.
+The UI started as a Claude Design mock-up (`design/Main.component.html`). Its colour tokens, bevels, LED glows and spacing were ported directly to Compose. [`PLAN.md`](PLAN.md) covers the architecture and the build plan: the data, playback and design-system layers were implemented in parallel, then reviewed, merged and tested on a real device.
 
 ## Credits
 
