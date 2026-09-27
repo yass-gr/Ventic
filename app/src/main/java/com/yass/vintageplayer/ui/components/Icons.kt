@@ -76,7 +76,7 @@ object VintageIcons {
     )
     val MusicNote: ImageVector = strokeIcon(
         "music_note",
-        "M9 18V5L21 3V16M9 18A3 3 0 1 0 9 12 3 3 0 0 0 9 18ZM18 16A3 3 0 1 0 18 10 3 3 0 0 0 18 16Z",
+        "M9 18V5L21 3V16M9 18A3 3 0 1 0 3 18A3 3 0 1 0 9 18ZM21 16A3 3 0 1 0 15 16A3 3 0 1 0 21 16Z",
         2f,
     )
     val Disc: ImageVector = strokeIcon(

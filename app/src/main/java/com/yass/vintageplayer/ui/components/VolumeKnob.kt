@@ -43,8 +43,12 @@ fun VolumeKnob(volume: Float, onVolume: (Float) -> Unit, modifier: Modifier = Mo
             .size(104.dp)
             .pointerInput(Unit) {
                 var prevAngle: Float? = null
+                var dragValue = 0f
                 detectDragGestures(
-                    onDragStart = { prevAngle = null },
+                    onDragStart = {
+                        prevAngle = null
+                        dragValue = latestVolume.coerceIn(0f, 1f)
+                    },
                     onDrag = { change, dragAmount ->
                         change.consume()
                         val w = size.width.toFloat()
@@ -66,7 +70,8 @@ fun VolumeKnob(volume: Float, onVolume: (Float) -> Unit, modifier: Modifier = Mo
                             }
                             prevAngle = angle
                         }
-                        val next = (latestVolume + delta).coerceIn(0f, 1f)
+                        dragValue = (dragValue + delta).coerceIn(0f, 1f)
+                        val next = dragValue
                         val tick = (next * 20).toInt()
                         if (tick != lastTick) {
                             lastTick = tick

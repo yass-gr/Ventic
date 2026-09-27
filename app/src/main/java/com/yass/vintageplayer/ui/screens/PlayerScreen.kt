@@ -4,6 +4,9 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -117,12 +120,18 @@ fun PlayerScreen(ui: UiState, vm: MainViewModel, modifier: Modifier = Modifier) 
         }
     }
 
+    BoxWithConstraints(modifier = modifier.fillMaxSize()) {
+    // Tall screens: tiers are spread evenly (design's justify-content: space-between).
+    // Short screens: fixed gaps inside a scroll container.
+    val roomy = maxHeight >= 660.dp
+    val tierGap: @Composable ColumnScope.() -> Unit = {
+        if (roomy) Spacer(Modifier.weight(1f)) else Spacer(Modifier.height(16.dp))
+    }
     Column(
-        modifier = modifier
+        modifier = Modifier
             .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(start = 20.dp, top = 20.dp, end = 20.dp, bottom = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
+            .then(if (roomy) Modifier else Modifier.verticalScroll(rememberScrollState()))
+            .padding(start = 20.dp, top = 16.dp, end = 20.dp, bottom = 16.dp),
     ) {
         // Header: back + NOW PLAYING + TRACK nn OF nn.
         Row(
@@ -154,8 +163,27 @@ fun PlayerScreen(ui: UiState, vm: MainViewModel, modifier: Modifier = Modifier) 
                     ),
                 )
             }
-            Box(modifier = Modifier.size(44.dp))
+            val headerFav = track != null && track.id in ui.favorites
+            BevelButton(
+                onClick = vm::toggleCurrentFav,
+                on = headerFav,
+                enabled = track != null,
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.size(44.dp),
+            ) {
+                Image(
+                    if (headerFav) VintageIcons.HeartFilled else VintageIcons.Heart,
+                    contentDescription = if (headerFav) "Remove from favorites" else "Add to favorites",
+                    modifier = Modifier.size(22.dp),
+                    colorFilter = ColorFilter.tint(if (headerFav) tokens.accentText else tokens.btnText),
+                )
+            }
         }
+
+        tierGap()
+
+        // Display tier: LCD + seek groove belong together.
+        Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
 
         // LCD block.
         LcdPanel(modifier = Modifier.fillMaxWidth()) {
@@ -179,7 +207,7 @@ fun PlayerScreen(ui: UiState, vm: MainViewModel, modifier: Modifier = Modifier) 
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
-                        CoverArt(track, 60.dp, 6.dp)
+                        CoverArt(track, 76.dp, 6.dp)
                         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                             BasicText(
                                 track.title.uppercase(),
@@ -205,6 +233,17 @@ fun PlayerScreen(ui: UiState, vm: MainViewModel, modifier: Modifier = Modifier) 
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
                             )
+                            BasicText(
+                                track.album.uppercase(),
+                                style = TextStyle(
+                                    color = tokens.lcdText.copy(alpha = 0.55f),
+                                    fontFamily = ShareTechMono,
+                                    fontSize = 12.sp,
+                                    letterSpacing = 1.sp,
+                                ),
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                            )
                         }
                     }
                 } else {
@@ -223,7 +262,8 @@ fun PlayerScreen(ui: UiState, vm: MainViewModel, modifier: Modifier = Modifier) 
                 SpectrumBars(
                     levels = { levels },
                     playing = { playback.isPlaying },
-                    modifier = Modifier.align(Alignment.CenterHorizontally),
+                    height = if (roomy) 60.dp else 48.dp,
+                    modifier = Modifier.align(Alignment.CenterHorizontally).padding(vertical = 4.dp),
                 )
                 Row(
                     verticalAlignment = Alignment.Bottom,
@@ -272,6 +312,9 @@ fun PlayerScreen(ui: UiState, vm: MainViewModel, modifier: Modifier = Modifier) 
                 }
             },
         )
+        }
+
+        tierGap()
 
         // Transport row.
         Row(
@@ -347,6 +390,8 @@ fun PlayerScreen(ui: UiState, vm: MainViewModel, modifier: Modifier = Modifier) 
             }
         }
 
+        tierGap()
+
         // VU + volume modules.
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -369,7 +414,7 @@ fun PlayerScreen(ui: UiState, vm: MainViewModel, modifier: Modifier = Modifier) 
             }
             Module(modifier = Modifier.width(138.dp)) {
                 Column(
-                    modifier = Modifier.padding(10.dp, 10.dp, 8.dp, 8.dp),
+                    modifier = Modifier.fillMaxWidth().padding(10.dp, 10.dp, 10.dp, 8.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(6.dp),
                 ) {
@@ -388,37 +433,7 @@ fun PlayerScreen(ui: UiState, vm: MainViewModel, modifier: Modifier = Modifier) 
             }
         }
 
-        // LOVE THIS.
-        val curFav = track != null && track.id in ui.favorites
-        BevelButton(
-            onClick = vm::toggleCurrentFav,
-            on = curFav,
-            shape = RoundedCornerShape(12.dp),
-            modifier = Modifier.fillMaxWidth().height(50.dp),
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
-            ) {
-                Led(curFav, size = 7.dp)
-                Image(
-                    if (curFav) VintageIcons.HeartFilled else VintageIcons.Heart,
-                    contentDescription = null,
-                    modifier = Modifier.size(20.dp),
-                    colorFilter = ColorFilter.tint(if (curFav) tokens.accentText else tokens.btnText),
-                )
-                BasicText(
-                    if (curFav) "LOVED" else "LOVE THIS",
-                    style = TextStyle(
-                        color = tokens.btnText,
-                        fontFamily = Barlow,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp,
-                        letterSpacing = 2.sp,
-                    ),
-                )
-            }
-        }
+    }
     }
 }
 

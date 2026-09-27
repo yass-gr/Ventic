@@ -128,7 +128,7 @@ fun VuMeter(
     }
 
     val gloss = remember {
-        Brush.verticalGradient(0f to Color.White.copy(alpha = 0.28f), 1f to Color.Transparent)
+        Brush.verticalGradient(0f to Color.White.copy(alpha = 0.22f), 0.5f to Color.White.copy(alpha = 0.06f), 1f to Color.Transparent)
     }
     Box(
         modifier = modifier
@@ -184,7 +184,7 @@ fun VuMeter(
                 drawLine(tokens.vuNeedle, Offset(cx, cy), Offset(cx, 38f * sy), strokeWidth = 2f * sx)
             }
             drawCircle(tokens.vuCap, 9f * sx, Offset(cx, cy))
-            drawRect(gloss, size = androidx.compose.ui.geometry.Size(size.width, size.height / 2f))
+            drawRect(gloss, size = androidx.compose.ui.geometry.Size(size.width, size.height * 0.62f))
         }
     }
 }

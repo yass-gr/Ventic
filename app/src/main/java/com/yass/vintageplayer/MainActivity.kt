@@ -2,6 +2,7 @@ package com.yass.vintageplayer
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.media.AudioManager
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -73,6 +74,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        volumeControlStream = AudioManager.STREAM_MUSIC
         gateNeeded = !hasAudioPermission()
         if (!gateNeeded) {
             lifecycleScope.launch { AppGraph.library.start() }

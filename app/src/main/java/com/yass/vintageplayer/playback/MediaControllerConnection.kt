@@ -3,6 +3,7 @@ package com.yass.vintageplayer.playback
 import android.content.ComponentName
 import android.content.ContentUris
 import android.content.Context
+import android.media.AudioManager
 import android.net.Uri
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
@@ -23,6 +24,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.guava.await
 import kotlinx.coroutines.launch
+import kotlin.math.roundToInt
 
 /**
  * [PlayerConnection] backed by a Media3 [MediaController] bound to [PlaybackService].
@@ -42,7 +44,7 @@ class MediaControllerConnection(
     private val persisted = settings.settings.value
     private val _state = MutableStateFlow(
         PlaybackState(
-            volume = persisted.volume,
+            volume = currentMediaVolume(context),
             shuffle = persisted.shuffle,
             repeatOne = persisted.repeatOne,
         ),
@@ -198,12 +200,23 @@ class MediaControllerConnection(
         settings.update { it.copy(repeatOne = enabled) }
     }
 
+    /** Sets the device media volume; [volume] is 0..1 mapped onto the stream's discrete steps. */
     override fun setVolume(volume: Float) {
         val coerced = volume.coerceIn(0f, 1f)
         runWhenConnected { ctrl ->
-            ctrl.volume = coerced
+            if (!ctrl.isCommandAvailable(Player.COMMAND_SET_DEVICE_VOLUME_WITH_FLAGS)) {
+                return@runWhenConnected
+            }
+            val info = ctrl.deviceInfo
+            val range = info.maxVolume - info.minVolume
+            if (range <= 0) {
+                return@runWhenConnected
+            }
+            val step = info.minVolume + (coerced * range).roundToInt()
+            if (step != ctrl.deviceVolume) {
+                ctrl.setDeviceVolume(step, 0)
+            }
         }
-        settings.update { it.copy(volume = coerced) }
     }
 
     /**
@@ -256,7 +269,7 @@ class MediaControllerConnection(
             repeatOne = ctrl.repeatMode == Player.REPEAT_MODE_ONE,
             queueIndex = ctrl.currentMediaItemIndex.coerceAtLeast(0),
             queueSize = ctrl.mediaItemCount,
-            volume = ctrl.volume,
+            volume = deviceVolumeFraction(ctrl),
         )
         _state.value = next
         if (wasPlaying && !next.isPlaying) {
@@ -284,9 +297,22 @@ class MediaControllerConnection(
     }
 
     private fun applyPersistedSettings(ctrl: MediaController, saved: AppSettings) {
-        ctrl.volume = saved.volume.coerceIn(0f, 1f)
+        // Loudness is owned by the device media volume; keep the player's own gain at unity.
+        ctrl.volume = 1f
         ctrl.shuffleModeEnabled = saved.shuffle
         ctrl.repeatMode = if (saved.repeatOne) Player.REPEAT_MODE_ONE else Player.REPEAT_MODE_OFF
+    }
+
+    private fun deviceVolumeFraction(ctrl: Player): Float {
+        if (!ctrl.isCommandAvailable(Player.COMMAND_GET_DEVICE_VOLUME)) {
+            return _state.value.volume
+        }
+        val info = ctrl.deviceInfo
+        val range = info.maxVolume - info.minVolume
+        if (range <= 0) {
+            return _state.value.volume
+        }
+        return ((ctrl.deviceVolume - info.minVolume).toFloat() / range).coerceIn(0f, 1f)
     }
 
     private fun Track.toMediaItem(): MediaItem {
@@ -309,6 +335,15 @@ class MediaControllerConnection(
     }
 
     companion object {
+        /** Device media volume as 0..1, read synchronously so the knob is right before the controller connects. */
+        private fun currentMediaVolume(context: Context): Float {
+            val audio = context.getSystemService(AudioManager::class.java) ?: return 0f
+            val min = audio.getStreamMinVolume(AudioManager.STREAM_MUSIC)
+            val max = audio.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+            if (max <= min) return 0f
+            return ((audio.getStreamVolume(AudioManager.STREAM_MUSIC) - min).toFloat() / (max - min)).coerceIn(0f, 1f)
+        }
+
         private const val PREVIOUS_RESTART_THRESHOLD_MS = 3_000L
         private const val PERSIST_INTERVAL_MS = 10_000L
     }

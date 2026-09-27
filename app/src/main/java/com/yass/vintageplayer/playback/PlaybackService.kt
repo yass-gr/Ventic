@@ -50,6 +50,8 @@ class PlaybackService : MediaSessionService() {
                 true,
             )
             .setHandleAudioBecomingNoisy(true)
+            // Volume knob drives the device media volume (STREAM_MUSIC), so hardware keys and knob stay in sync.
+            .setDeviceVolumeControlEnabled(true)
             .setWakeMode(C.WAKE_MODE_LOCAL)
             .build()
         player = exoPlayer
