@@ -4,7 +4,8 @@
 
 <p align="center">
   <a href="https://github.com/yass-gr/Ventic/releases/latest"><b>⬇ Download the APK</b></a>
-  &nbsp;·&nbsp; Android 10+ &nbsp;·&nbsp; 3.8 MB &nbsp;·&nbsp; no internet permission
+  &nbsp;·&nbsp; <a href="https://github.com/yass-gr/Ventic/raw/main/docs/video/ventic-release.mp4"><b>▶ Watch the release video</b></a>
+  <br>Android 10+ &nbsp;·&nbsp; 3.8 MB &nbsp;·&nbsp; no internet permission
 </p>
 
 # Ventic
@@ -63,6 +64,10 @@ echo "sdk.dir=$HOME/Android/Sdk" > local.properties
 ## How it was made
 
 The UI started as a Claude Design mock-up (`design/Main.component.html`). Its colour tokens, bevels, LED glows and spacing were ported directly to Compose. [`PLAN.md`](PLAN.md) covers the architecture and the build plan: the data, playback and design-system layers were implemented in parallel, then reviewed, merged and tested on a real device.
+
+## Release video
+
+[`docs/video/ventic-release.mp4`](docs/video/ventic-release.mp4) is a 24-second motion graphic, generated entirely in code by [`make_video.py`](docs/video/make_video.py). Python and Pillow draw every frame, numpy synthesizes a 120 BPM soundtrack, and ffmpeg encodes the result. The phone footage is a real screen recording of the app, and the spectrum in the typing scene is an FFT of the video's own soundtrack.
 
 ## Credits
 
